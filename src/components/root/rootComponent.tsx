@@ -1,6 +1,23 @@
+import { ExitToAppOutlined, Person, Settings } from '@mui/icons-material';
+import {
+	Avatar,
+	Box,
+	Button,
+	Divider,
+	IconButton,
+	Input,
+	ListItemIcon,
+	ListItemText,
+	Menu,
+	MenuItem,
+	Stack,
+	TextField,
+	Tooltip,
+	Typography,
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { auth, logout } from '../../config/firebase';
 
 export default function RootComponent() {
@@ -11,101 +28,123 @@ export default function RootComponent() {
 		if (loading) return;
 		if (!user) navigate('/login');
 	}, [user, loading]);
+	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+	const open = Boolean(anchorEl);
 
-	const [dropdownUser, setDropdownUser] = useState<boolean>(false);
+	const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+		setAnchorEl(event.currentTarget);
+	};
+
+	const handleLogout = () => {
+		logout();
+		onClose();
+	};
+	const onClose = () => {
+		setAnchorEl(null);
+	};
 
 	// nav which ist 1/5 of the screen horizontally
 	// the rest is the content
 	// on the bottom of the nav should be an avatar with the username
 	// when clicking on the avatar, a dropdown should appear with logout
 	// when clicking on logout, the user should be logged out and navigated to login
+	// the styling should be made with mui
 	return (
-		<div className='flex flex-row items-start justify-start h-screen bg-slate-900'>
-			<div className='flex flex-col items-center justify-start w-1/6 h-full bg-slate-800'>
-				<div className='flex flex-col items-center justify-center w-full h-16'>
-					{/* search bar lookalike opens a dialogue */}
-					<div
-						className='flex flex-row items-center justify-center w-3/4 h-10 px-2 text-slate-900 bg-slate-300 rounded-md cursor-pointer
-					hover:bg-slate-400 hover:opacity-75 transition-all duration-300 ease-in-out
-					'
+		<Box sx={{ display: 'flex', height: '100vh', width: '100vw' }}>
+			<Box sx={{ display: 'flex', height: '100vh', width: '30vh', flexDirection: 'column', padding: 2, bgcolor: '#1a1a1a' }}>
+				<Box sx={{ display: 'flex', height: '8vh' }}>
+					{/* search bar which opens a dialog => is just a dummy*/}
+					<Box
+						sx={{
+							cursor: 'pointer',
+							display: 'flex',
+							justifyContent: 'center',
+							alignItems: 'center',
+							bgcolor: '#121212',
+							width: '100%',
+							marginBottom: '1em',
+							borderRadius: '0.5em',
+							opacity: 0.6,
+						}}
 					>
-						<svg
-							className='w-6 h-6 text-slate-900'
-							fill='none'
-							stroke='currentColor'
-							viewBox='0 0 24 24'
-							xmlns='http://www.w3.org/2000/svg'
+						<Typography>Search</Typography>
+					</Box>
+				</Box>
+				<Divider />
+				<Box sx={{ display: 'flex', flexDirection: 'column', height: '84vh', marginTop: '1em' }}>
+					{/* person icon with friends Text */}
+					<Button sx={{ height: '10%' }}>
+						<Link
+							to='/friends'
+							style={{
+								textDecoration: 'none',
+								color: 'inherit',
+							}}
 						>
-							<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
-						</svg>
-						{/* not an input field */}
-						<div
-							className='flex flex-row items-center justify-center w-full h-full px-2 text-sm text-slate-900 bg-transparent rounded-md opacity-50
-						'
-						>
-							Search
-						</div>
-					</div>
-				</div>
-				<div className='bg-slate-700 w-full h-px'></div>
-				<div className='flex flex-col items-center justify-start w-full h-full p-4'>
-					<div
-						className='flex flex-row items-center justify-start w-full h-16 px-4 text-slate-100 bg-slate-800
-					hover:bg-slate-700  transition-all duration-300 ease-in-out rounded-md gap-2
-					'
+							<Stack spacing={0.5} direction='row'>
+								<Person />
+								<Typography fontWeight={700}> Friends </Typography>
+							</Stack>
+						</Link>
+					</Button>
+				</Box>
+				<Divider />
+				<Box
+					sx={{
+						display: 'flex',
+						gap: 2,
+						flexDirection: 'row',
+						height: '8vh',
+						alignItems: 'center',
+					}}
+				>
+					<Button
+						id='menu-button'
+						aria-controls={open ? 'menu' : undefined}
+						aria-haspopup='true'
+						aria-expanded={open ? 'true' : undefined}
+						onClick={handleClick}
+						sx={{ height: '100%', width: '100%', gap: 1, justifyContent: 'flex-start' }}
 					>
-						{/* person icon */}
-						<svg
-							xmlns='http://www.w3.org/2000/svg'
-							width='24'
-							height='24'
-							fill='currentColor'
-							className='bi bi-person-fill'
-							viewBox='0 0 16 16'
-						>
-							<path d='M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z' />
-						</svg>
-						<div className='flex flex-row items-center justify-start w-full h-full  text-lg text-slate-100 bg-transparent rounded-md'>
-							Friends
-						</div>
-					</div>
-					{/* bottom of the nav: avatar*/}
-					<div className='flex-row h-full w-full'></div>
-					<div
-						className='flex flex-row items-center justify-center w-full h-16 px-4 text-slate-100 bg-slate-800
-					'
+						<Avatar variant='rounded' src={user?.photoURL?.toString()} />
+						<Stack spacing={0.5}>
+							<Typography fontWeight={700}> {user?.displayName} </Typography>
+						</Stack>
+					</Button>
+					<Menu
+						id='menu'
+						anchorEl={anchorEl}
+						open={open}
+						onClose={onClose}
+						MenuListProps={{
+							'aria-labelledby': 'menu-button',
+						}}
+						anchorOrigin={{
+							vertical: 'top',
+							horizontal: 'right',
+						}}
 					>
-						<div
-							className='relative flex flex-row items-center justify-start w-full h-full px-4 text-lg text-slate-100  rounded-md hover:bg-slate-700 transition-all duration-300 ease-in-out cursor-pointer'
-							data-toggle='dropdown'
-						>
-							{/* person icon */}
-							<svg
-								xmlns='http://www.w3.org/2000/svg'
-								width='24'
-								height='24'
-								fill='currentColor'
-								className='bi bi-person-fill'
-								viewBox='0 0 16 16'
-							>
-								<path d='M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z' />
-							</svg>
-							<div
-								className='flex flex-row items-center justify-start w-full h-full px-4 text-lg text-slate-100 bg-transparent rounded-md'
-								onClick={() => setDropdownUser(!dropdownUser)}
-							>
-								{user?.displayName}
-							</div>
-							{/* dropdown with logout item */}
-						</div>
-						{/* dropdown */}
-					</div>
-				</div>
-			</div>
-
-			<div className='flex flex-col items-center justify-start w-4/5 h-full'>
+						<MenuItem onClick={handleLogout}>
+							<ListItemIcon>
+								{/* Logout */}
+								<IconButton aria-label='logout' color='inherit'>
+									<ExitToAppOutlined />
+								</IconButton>
+							</ListItemIcon>
+							<ListItemText primary='Logout' />
+						</MenuItem>
+					</Menu>
+					<Tooltip title='Settings'>
+						<IconButton>
+							<Settings />
+						</IconButton>
+					</Tooltip>
+				</Box>
+			</Box>
+			<Box sx={{ display: 'flex', height: '100vh', width: '100%', padding: 2 }}>
+				{/* mui transition */}
 				<Outlet />
-			</div>
-		</div>
+			</Box>
+		</Box>
 	);
 }

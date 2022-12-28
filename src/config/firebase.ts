@@ -1,9 +1,10 @@
 import { initializeApp } from "firebase/app";
 import {
-    createUserWithEmailAndPassword, getAuth, GoogleAuthProvider, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, signOut
+    createUserWithEmailAndPassword,
+    getAuth, GoogleAuthProvider, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, signOut
 } from "firebase/auth";
 import {
-    addDoc, collection, doc, getDocs, getFirestore,
+    collection, doc, getDocs, getFirestore,
     query, setDoc, where
 } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
@@ -55,19 +56,19 @@ const loginWithEmailAndPassword = async (email: string, password: string) => {
     }
 }
 
-const registerUserWithEmailAndPassword = async (email: string, password: string) => {
+const registerUserWithEmailAndPassword = async (email: string, password: string, userName: string) => {
     try {
         const res = await createUserWithEmailAndPassword(auth, email, password);
         const user = res.user;
         await setDoc(doc(db, "users", user.uid), {
             uid: user.uid,
-            name: user.displayName,
+            name: userName,
             authProvider: "email",
             email: user.email,
         });
 
     } catch (error) {
-        console.log(error);
+        throw error;
     }
 }
 
