@@ -4,10 +4,11 @@ import {
     getAuth, GoogleAuthProvider, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, signOut
 } from "firebase/auth";
 import {
-    collection, doc, getDocs, getFirestore,
+    collection, deleteDoc, doc, getDoc, getDocs, getFirestore,
     query, setDoc, where
 } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { IProfile } from "../intefaces/Profile";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -25,6 +26,7 @@ const auth = getAuth();
 const db = getFirestore();
 const storage = getStorage();
 
+
 const googleProvider = new GoogleAuthProvider();
 const signInWithGoogle = async () => {
     try {
@@ -39,10 +41,11 @@ const signInWithGoogle = async () => {
                 name: user.displayName,
                 authProvider: "google",
                 email: user.email,
-            });
-
+                avatar: user.photoURL,
+                friendIds: [],
+                chatRoomIds: [],
+            } as IProfile);
         }
-
     } catch (error) {
         console.log(error);
     }
@@ -65,7 +68,10 @@ const registerUserWithEmailAndPassword = async (email: string, password: string,
             name: userName,
             authProvider: "email",
             email: user.email,
-        });
+            avatar: '',
+            friendIds: [],
+            chatRoomIds: [],
+        } as IProfile);
 
     } catch (error) {
         throw error;
@@ -87,6 +93,38 @@ const logout = async () => {
         console.log(error);
     }
 }
+// set profile is a function that takes in a profile object and sets it to state
+
+const getProfile = async (uid: string, setProfile: (profile: IProfile) => void) => {
+    try {
+        // document has the same id as the uid
+        const docRef = doc(db, "users", uid);
+        const docSnap = await getDoc(docRef);
+        if (!docSnap.exists()) {
+            console.log("No such document!");
+            return;
+        }
+        const profile = docSnap.data() as IProfile;
+        setProfile(profile);
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+
+const deleteProfile = async (uid: string) => {
+    try {
+        // document has the same id as the uid
+        const docRef = doc(db, "users", uid);
+        await deleteDoc(docRef);
+        // and then delete the user from auth
+        await auth.currentUser?.delete();
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+
 
 export {
     auth,
@@ -96,5 +134,7 @@ export {
     registerUserWithEmailAndPassword,
     sendPasswordReset,
     logout,
+    getProfile,
+    deleteProfile,
 };
 

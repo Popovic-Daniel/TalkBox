@@ -6,6 +6,12 @@ export const routes: RouteObject[] = [
 	{
 		path: '/',
 		element: <RootComponent />,
+		children: [
+			{
+				path: '/friends',
+				element: <div>Friends</div>,
+			},
+		],
 	},
 	{
 		path: '/login',

@@ -54,41 +54,60 @@ export default function Login() {
 					}}
 				>
 					{showForm && (
-						<FormControl sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-							<Typography variant='h4' textAlign={'center'}>
-								Login
-							</Typography>
-							<TextField type='email' label='Email' variant='outlined' onChange={(e) => setEmail(e.target.value)} />
-							<TextField type={'password'} label='Password' variant='outlined' onChange={(e) => setPassword(e.target.value)} />
-							<Button variant='contained' onClick={() => loginWithEmailAndPassword(email, password)}>
-								Login
-							</Button>
-							<Button
-								variant='text'
-								onClick={() => signInWithGoogle()}
-								sx={{
-									color: 'black',
-									backgroundColor: 'white',
-									'&:hover': {
-										backgroundColor: 'black',
-										color: 'white',
-									},
-									display: 'flex',
-									alignItems: 'center',
-									gap: 1,
-									verticalAlign: 'middle',
-								}}
-							>
-								<Google />
-								<Typography>Login with Google</Typography>
-							</Button>
-							<Typography variant='body1'>
-								Don't have an account?{' '}
-								<Link to='/register' style={{ textDecoration: 'none', color: 'cyan' }}>
-									Register
-								</Link>
-							</Typography>
-						</FormControl>
+						<form
+							onSubmit={(e) => {
+								e.preventDefault();
+								loginWithEmailAndPassword(email, password);
+							}}
+						>
+							<FormControl sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+								<Typography variant='h4' textAlign={'center'}>
+									Login
+								</Typography>
+								<TextField
+									type='email'
+									label='Email'
+									variant='outlined'
+									onChange={(e) => setEmail(e.target.value)}
+									autoComplete='email'
+								/>
+								<TextField
+									type={'password'}
+									label='Password'
+									variant='outlined'
+									onChange={(e) => setPassword(e.target.value)}
+									autoComplete='current-password'
+								/>
+								<Button variant='contained' type='submit'>
+									Login
+								</Button>
+								<Button
+									variant='text'
+									onClick={() => signInWithGoogle()}
+									sx={{
+										color: 'black',
+										backgroundColor: 'white',
+										'&:hover': {
+											backgroundColor: 'black',
+											color: 'white',
+										},
+										display: 'flex',
+										alignItems: 'center',
+										gap: 1,
+										verticalAlign: 'middle',
+									}}
+								>
+									<Google />
+									<Typography>Login with Google</Typography>
+								</Button>
+								<Typography variant='body1'>
+									Don't have an account?{' '}
+									<Link to='/register' style={{ textDecoration: 'none', color: 'cyan' }}>
+										Register
+									</Link>
+								</Typography>
+							</FormControl>
+						</form>
 					)}
 				</Card>
 			</Box>

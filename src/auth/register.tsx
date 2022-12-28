@@ -115,57 +115,67 @@ export default function Register() {
 					}}
 				>
 					{showForm && (
-						<FormControl sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-							<Typography variant='h4' sx={{ textAlign: 'center' }}>
-								Register
-							</Typography>
-							<TextField
-								type='text'
-								label='Username'
-								variant='outlined'
-								onChange={onUserNameChange}
-								error={!!userNameError}
-								helperText={userNameError?.message}
-							/>
-							<TextField
-								type='email'
-								label='Email'
-								variant='outlined'
-								onChange={onEmailChange}
-								error={!!emailError}
-								helperText={emailError?.message}
-							/>
-							<TextField
-								type={'password'}
-								label='Password'
-								variant='outlined'
-								onChange={onPasswordChange}
-								error={!!passwordError}
-								helperText={passwordError?.message}
-							/>
-							<TextField
-								type={'password'}
-								label='Confirm Password'
-								variant='outlined'
-								onChange={onPasswordConfirmChange}
-								error={!!passwordConfirmError}
-								helperText={passwordConfirmError?.message}
-							/>
-							<Button variant='contained' onClick={onRegister} type='submit'>
-								Register
-							</Button>
-							{submitError && (
-								<Typography variant='body1' color='error'>
-									{submitError.message}
+						<form
+							onSubmit={(e) => {
+								e.preventDefault();
+								onRegister();
+							}}
+						>
+							<FormControl sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+								<Typography variant='h4' sx={{ textAlign: 'center' }}>
+									Register
 								</Typography>
-							)}
-							<Typography variant='body1'>
-								Already have an account?{' '}
-								<Link to='/login' style={{ textDecoration: 'none', color: 'cyan' }}>
-									Login
-								</Link>
-							</Typography>
-						</FormControl>
+								<TextField
+									type='text'
+									label='Username'
+									variant='outlined'
+									onChange={onUserNameChange}
+									error={!!userNameError}
+									helperText={userNameError?.message}
+									autoComplete='username'
+								/>
+								<TextField
+									type='email'
+									label='Email'
+									variant='outlined'
+									onChange={onEmailChange}
+									error={!!emailError}
+									helperText={emailError?.message}
+								/>
+								<TextField
+									type={'password'}
+									label='Password'
+									variant='outlined'
+									onChange={onPasswordChange}
+									error={!!passwordError}
+									helperText={passwordError?.message}
+									autoComplete='new-password'
+								/>
+								<TextField
+									type={'password'}
+									label='Confirm Password'
+									variant='outlined'
+									onChange={onPasswordConfirmChange}
+									error={!!passwordConfirmError}
+									helperText={passwordConfirmError?.message}
+									autoComplete='new-password'
+								/>
+								<Button variant='contained' type='submit'>
+									Register
+								</Button>
+								{submitError && (
+									<Typography variant='body1' color='error'>
+										{submitError.message}
+									</Typography>
+								)}
+								<Typography variant='body1'>
+									Already have an account?{' '}
+									<Link to='/login' style={{ textDecoration: 'none', color: 'cyan' }}>
+										Login
+									</Link>
+								</Typography>
+							</FormControl>
+						</form>
 					)}
 				</Card>
 			</Box>
