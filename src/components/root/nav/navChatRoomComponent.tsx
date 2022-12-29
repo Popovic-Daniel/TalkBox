@@ -1,10 +1,9 @@
 import { Add } from '@mui/icons-material';
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, doc, documentId, getDocs, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { db } from '../../../config/firebase';
 import { ChatRoom } from '../../../interfaces/ChatRoom';
-import { Message } from '../../../interfaces/Message';
 import { IProfile } from '../../../interfaces/Profile';
 import ChatRoomAvatar from '../../chatrooms/chatRoomAvatar';
 
@@ -17,44 +16,43 @@ export default function ({ chatRoomIds, profile }: NavChatRoomProps) {
 	const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
 	useEffect(() => {
 		if (!chatRoomIds) return;
-		// if (chatRoomIds.length === 0) return;
-		getChatRooms();
+		if (chatRoomIds.length === 0) return;
+
+		const unsubscribe = getChatRooms();
+		return () => {
+			unsubscribe();
+		};
 	}, [chatRoomIds]);
 
-	async function getChatRooms() {
+	function getChatRooms() {
 		const chatRoomsRef = collection(db, 'chatRooms');
-		if (chatRoomIds?.length === 0) {
-			setChatRooms([
-				{
-					uid: '1',
-					name: 'test',
-					imageUrl: '',
-					memberIds: [],
-					messages: [
-						{
-							uid: '1',
-							text: 'test',
-							timestamp: new Date().getTime(),
-							userId: profile?.uid,
-						},
-						{
-							uid: '2',
-							text: 'test',
-							timestamp: new Date().getTime(),
-							userId: '1',
-						},
-					],
-				},
-			]);
-			return;
-		}
-		const q = query(chatRoomsRef, where('id', 'in', chatRoomIds));
-		const docs = await getDocs(q);
-		docs.forEach((doc) => {
-			console.log(doc.id, ' => ', doc.data());
-			setChatRooms((prev: any) => [...prev, doc.data() as ChatRoom]);
+		const q = query(chatRoomsRef, where(documentId(), 'in', chatRoomIds));
+		const unsubscribe = onSnapshot(q, (query) => {
+			const chatRooms: ChatRoom[] = [];
+			query.forEach((doc) => {
+				let chatRoom: ChatRoom = {
+					uid: doc.id,
+					...(doc.data() as ChatRoom),
+				};
+				chatRooms.push(chatRoom);
+			});
+			setChatRooms(chatRooms);
 		});
+		return unsubscribe;
 	}
+
+	const onRemoveChatRoom = async (chatRoomUid: string | undefined) => {
+		try {
+			setChatRooms((prev) => prev.filter((chatRoom) => chatRoom.uid !== chatRoom.uid));
+			if (!profile) return;
+			console.log(profile, chatRoomUid);
+			await updateDoc(doc(db, 'users', profile.uid), {
+				chatRoomIds: profile.chatRoomIds.filter((chatRoomId) => chatRoomId !== chatRoomUid),
+			});
+		} catch (error) {
+			console.log(error);
+		}
+	};
 
 	return (
 		<>
@@ -75,7 +73,7 @@ export default function ({ chatRoomIds, profile }: NavChatRoomProps) {
 			</Box>
 			{chatRooms?.map((chatRoom) => (
 				<Box key={chatRoom.uid}>
-					<ChatRoomAvatar chatRoom={chatRoom} setChatRooms={setChatRooms} profile={profile} />
+					<ChatRoomAvatar chatRoom={chatRoom} onRemoveChatRoom={onRemoveChatRoom} />
 				</Box>
 			))}
 		</>

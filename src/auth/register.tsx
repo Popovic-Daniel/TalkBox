@@ -57,7 +57,6 @@ export default function Register() {
 			setEmailError(new Error('Email must be at least 3 characters'));
 			return;
 		}
-		console.log('hi');
 		setEmailError(undefined);
 	};
 
@@ -81,7 +80,6 @@ export default function Register() {
 
 	const onPasswordConfirmChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setPasswordConfirm(e.target.value);
-		console.log(password === e.target.value);
 		if (password !== e.target.value) {
 			setPasswordConfirmError(new Error('Passwords do not match'));
 		}

@@ -1,13 +1,16 @@
 import { initializeApp } from "firebase/app";
 import {
     createUserWithEmailAndPassword,
-    getAuth, GoogleAuthProvider, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, signOut
+    getAuth, GoogleAuthProvider, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, signOut, Unsubscribe
 } from "firebase/auth";
 import {
-    collection, deleteDoc, doc, getDoc, getDocs, getFirestore,
-    query, setDoc, where
+    addDoc,
+    collection, deleteDoc, doc, documentId, getDoc, getDocs, getFirestore,
+    onSnapshot, query, setDoc, updateDoc, where
 } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { Dispatch } from "react";
+import { ChatRoom } from "../interfaces/ChatRoom";
 import { IProfile } from "../interfaces/Profile";
 
 // Your web app's Firebase configuration
@@ -95,22 +98,31 @@ const logout = async () => {
 }
 // set profile is a function that takes in a profile object and sets it to state
 
-const getProfile = async (uid: string): Promise<IProfile | undefined> => {
+const getProfile = (uid: string, setProfile: Dispatch<IProfile>): Unsubscribe | undefined => {
     try {
         // document has the same id as the uid
         const docRef = doc(db, "users", uid);
         // check if the document exists in the cache
-        const docSnap = await getDoc(docRef);
-        if (!docSnap.exists()) {
-            console.log("No such document!");
-            return;
-        }
-        return docSnap.data() as IProfile;
+        const unsubscribe = onSnapshot(docRef, (snap) => {
+            setProfile(snap.data() as IProfile)
+        })
+
+        return unsubscribe;
     } catch (error) {
         console.log(error);
     }
 }
 
+const getFriends = (friendIds: string[], setFriends: Dispatch<IProfile[]>): Unsubscribe | undefined => {
+    try {
+        const q = query(collection(db, "users"), where(documentId(), 'in', friendIds));
+        const unsubscribe = onSnapshot(q, (snap) => setFriends(snap.docs.map((d) => d.data() as IProfile)))
+        return unsubscribe;
+    } catch (error) {
+        console.log(error);
+    }
+
+}
 
 const deleteProfile = async (uid: string) => {
     try {
@@ -126,6 +138,52 @@ const deleteProfile = async (uid: string) => {
 
 
 
+const getChatRoomByMembers = (memberIds: string[], setChatRoom: Dispatch<ChatRoom>): Unsubscribe | undefined => {
+    try {
+        const q = query(collection(db, 'chatRooms'), where("memberIds", "==", memberIds));
+        const unsubscribe = onSnapshot(q, (snap) => {
+            let chatRoom = {
+                uid: snap.docs[0].id,
+                ...snap.docs[0]?.data()
+            }
+            console.log("chatroom snap", chatRoom);
+            setChatRoom(chatRoom as ChatRoom);
+        })
+        return unsubscribe;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const createChatRoom = async (memberIds: string[]): Promise<void> => {
+    try {
+        let chatRoom: ChatRoom = {
+            memberIds,
+            messages: [],
+            imageUrl: '',
+            name: '',
+        }
+        const d = await addDoc(collection(db, "chatRooms"), chatRoom);
+        // update the chatRoomIds of the members
+        memberIds.forEach(async (memberId) => {
+            const docRef = doc(db, "users", memberId);
+            const docSnap = await getDoc(docRef);
+            if (!docSnap.exists()) {
+                console.log("No such document!");
+                return;
+            }
+            const profile = docSnap.data() as IProfile;
+            console.log(profile)
+            await updateDoc(docRef, {
+                chatRoomIds: [...profile.chatRoomIds, d.id],
+            });
+        })
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+
 export {
     auth,
     db,
@@ -136,5 +194,8 @@ export {
     logout,
     getProfile,
     deleteProfile,
+    getChatRoomByMembers,
+    createChatRoom,
+    getFriends
 };
 

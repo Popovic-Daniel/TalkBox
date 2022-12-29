@@ -1,19 +1,59 @@
 import { ChatBubbleRounded, MoreVert } from '@mui/icons-material';
-import { Box, IconButton, Tooltip } from '@mui/material';
+import { Box, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
+import { doc, updateDoc } from 'firebase/firestore';
+import { Dispatch, SetStateAction, useContext, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { db } from '../../config/firebase';
+import { IProfile } from '../../interfaces/Profile';
+import { profileContext } from '../root/rootComponent';
 
-export default function () {
+interface IFiendOptionsProps {
+	friendUid: string;
+}
+
+export default function ({ friendUid }: IFiendOptionsProps) {
+	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+	const open = Boolean(anchorEl);
+
+	const [profile, setProfile] = useContext<[IProfile | undefined, Dispatch<SetStateAction<IProfile | undefined>>]>(profileContext);
+
+	const removeFriend = async () => {
+		try {
+			if (!profile) return;
+			profile.friendIds = profile.friendIds?.filter((id) => id !== friendUid);
+			await updateDoc(doc(db, 'users', profile?.uid), {
+				friendIds: profile.friendIds?.filter((id) => id !== friendUid),
+			});
+		} catch (error) {
+			console.log(error);
+		}
+		setAnchorEl(null);
+	};
+
 	return (
 		<Box sx={{ display: 'flex', gap: 5, p: 1 }}>
 			<Tooltip title='open chat' key='openChat'>
-				<IconButton>
-					<ChatBubbleRounded />
-				</IconButton>
+				<Link to={'/chat'} state={{ friendUid }}>
+					<IconButton>
+						<ChatBubbleRounded />
+					</IconButton>
+				</Link>
 			</Tooltip>
 			<Tooltip title='more' key='moreOptions'>
-				<IconButton>
+				<IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
 					<MoreVert />
 				</IconButton>
 			</Tooltip>
+			<Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
+				<MenuItem
+					sx={{
+						color: 'red',
+					}}
+					onClick={removeFriend}
+				>
+					Remove Friend
+				</MenuItem>
+			</Menu>
 		</Box>
 	);
 }

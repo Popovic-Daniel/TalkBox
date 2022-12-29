@@ -5,5 +5,5 @@ export interface ChatRoom {
     messages: Message[];
     imageUrl: string;
     name: string;
-    uid: string;
+    uid?: string;
 }

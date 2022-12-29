@@ -1,37 +1,21 @@
 import { Clear } from '@mui/icons-material';
-import { Avatar, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip, Typography } from '@mui/material';
-import { deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { Avatar, Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { db } from '../../config/firebase';
 import RemoveChatroomDialog from '../../dialogs/removeChatroomDialog';
 import { ChatRoom } from '../../interfaces/ChatRoom';
-import { IProfile } from '../../interfaces/Profile';
 
 interface IChatRoomAvatarProps {
 	chatRoom: ChatRoom;
-	setChatRooms: React.Dispatch<React.SetStateAction<ChatRoom[]>>;
-	profile: IProfile | undefined;
+	onRemoveChatRoom: (chatRoomUid: string | undefined) => void;
 }
 
-export default function ({ chatRoom, setChatRooms, profile }: IChatRoomAvatarProps) {
+export default function ({ chatRoom, onRemoveChatRoom }: IChatRoomAvatarProps) {
 	const [isHovered, setIsHovered] = useState<boolean>(false);
 	const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState<boolean>(false);
 
 	const onHandleRemoveChatRoom = () => {
 		setIsRemoveDialogOpen(true);
-	};
-	const onRemoveChatRoom = async () => {
-		setIsRemoveDialogOpen(false);
-		try {
-			setChatRooms((prev) => prev.filter((chatRoom) => chatRoom.uid !== chatRoom.uid));
-			if (!profile) return;
-			await updateDoc(doc(db, 'users', profile.uid), {
-				chatRoomIds: profile.chatRoomIds.filter((chatRoomId) => chatRoomId !== chatRoom.uid),
-			});
-		} catch (error) {
-			console.log(error);
-		}
 	};
 
 	return (
@@ -80,7 +64,15 @@ export default function ({ chatRoom, setChatRooms, profile }: IChatRoomAvatarPro
 				</Tooltip>
 			</Box>
 
-			<RemoveChatroomDialog onClose={() => setIsRemoveDialogOpen(false)} open={isRemoveDialogOpen} onRemoveChatRoom={onRemoveChatRoom} />
+			<RemoveChatroomDialog
+				onClose={() => setIsRemoveDialogOpen(false)}
+				open={isRemoveDialogOpen}
+				onRemoveChatRoom={() => {
+					setIsRemoveDialogOpen(false);
+					console.log(chatRoom);
+					onRemoveChatRoom(chatRoom?.uid);
+				}}
+			/>
 		</>
 	);
 }

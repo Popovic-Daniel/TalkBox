@@ -1,68 +1,25 @@
-import { Chat, ChatBubble, ChatBubbleRounded, More, MoreVert } from '@mui/icons-material';
-import { Avatar, Box, Divider, IconButton, Tooltip, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { Avatar, Box, Divider, Typography } from '@mui/material';
+import React, { useContext, useEffect, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { auth, getProfile } from '../../config/firebase';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { auth, getFriends, getProfile } from '../../config/firebase';
 import { IProfile } from '../../interfaces/Profile';
+import { profileContext } from '../root/rootComponent';
 import FriendOptionsComponent from './friendOptionsComponent';
 
 export default function () {
-	const data = useLocation();
-	const [profile, setProfile] = useState<IProfile>();
-	const [user, loading, error] = useAuthState(auth);
-	const [friends, setFriends] = useState<IProfile[]>([
-		{
-			avatar: '',
-			name: 'John',
-			uid: '123',
-			authProvider: 'google',
-			chatRoomIds: [],
-			friendIds: [],
-			email: 'john@gmail.com',
-		},
-		{
-			avatar: '',
-			name: 'Jeff',
-			uid: '223',
-			authProvider: 'google',
-			chatRoomIds: [],
-			friendIds: [],
-			email: 'jeff@gmail.com',
-		},
-	]);
-	const navigate = useNavigate();
+	const [profile, setProfile] = useContext<[IProfile, React.Dispatch<IProfile>]>(profileContext);
+	const [friends, setFriends] = useState<IProfile[]>();
 	useEffect(() => {
-		if (loading) return;
-		if (!user) {
-			navigate('/login');
-			return;
-		}
-		if (!data.state?.profile) {
-			getProfile(user.uid).then((profile: unknown) => {
-				setProfile(profile as IProfile);
-			});
-		} else {
-			setProfile(data.state.profile);
-		}
-
-		// getFriends();
-	}, [user, loading]);
-
-	async function getFriends() {
-		const friendIds: string[] = profile?.friendIds || [];
-		const friends: IProfile[] = [];
-		for (const friendId of friendIds) {
-			const friend = await getProfile(friendId);
-			if (friend) friends.push(friend);
-		}
-		setFriends(friends);
-	}
+		if (!profile) return;
+		if (profile.friendIds.length == 0) return;
+		const unsubscribe = getFriends(profile.friendIds, setFriends);
+		return () => {
+			if (unsubscribe) unsubscribe();
+		};
+	}, [profile]);
 
 	return (
-		// use mui for styling
-		// just display the friends, nav is already in rootComponent
-
 		<Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
 			{friends?.map((friend) => (
 				<Box sx={{ display: 'flex', flexDirection: 'column', height: 64 }} key={friend.uid}>
@@ -83,13 +40,18 @@ export default function () {
 							cursor: 'pointer',
 							borderRadius: '0.5em',
 							height: '100%',
-							gap: 1,
 						}}
 					>
-						<Avatar src={friend.avatar} />
-						<Typography>{friend.name}</Typography>
+						<Link
+							to={'/chat'}
+							state={{ friendUid: friend.uid }}
+							style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '1em', width: '100%' }}
+						>
+							<Avatar src={friend.avatar} />
+							<Typography>{friend.name}</Typography>
+						</Link>
 						<Box sx={{ flexGrow: 1 }} />
-						<FriendOptionsComponent />
+						<FriendOptionsComponent friendUid={friend.uid} />
 					</Box>
 				</Box>
 			))}
