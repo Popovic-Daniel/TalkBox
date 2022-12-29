@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { auth, getProfile } from '../../config/firebase';
-import { IProfile } from '../../intefaces/Profile';
+import { IProfile } from '../../interfaces/Profile';
 import NavComponent from './nav/navComponent';
 import ProfileComponent from './profile/profileComponent';
 import SearchComponent from './searchComponent';
@@ -18,7 +18,9 @@ export default function RootComponent() {
 			navigate('/login');
 			return;
 		}
-		getProfile(user.uid, setProfile);
+		getProfile(user.uid).then((profile: unknown) => {
+			setProfile(profile as IProfile);
+		});
 	}, [user, loading]);
 
 	return (
@@ -26,7 +28,7 @@ export default function RootComponent() {
 			<Box sx={{ display: 'flex', height: '100vh', width: '30vh', flexDirection: 'column', padding: 2, bgcolor: '#1a1a1a' }}>
 				<SearchComponent />
 				<Divider />
-				<NavComponent chatRoomIds={profile?.chatRoomIds} />
+				<NavComponent chatRoomIds={profile?.chatRoomIds} profile={profile} />
 				<Divider />
 				<ProfileComponent profile={profile} />
 			</Box>

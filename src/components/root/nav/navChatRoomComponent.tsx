@@ -1,17 +1,20 @@
 import { Add } from '@mui/icons-material';
-import { Box, IconButton, Typography } from '@mui/material';
+import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { db } from '../../../config/firebase';
-import { ChatRoom } from '../../../intefaces/ChatRoom';
+import { ChatRoom } from '../../../interfaces/ChatRoom';
+import { Message } from '../../../interfaces/Message';
+import { IProfile } from '../../../interfaces/Profile';
 import ChatRoomAvatar from '../../chatrooms/chatRoomAvatar';
 
 interface NavChatRoomProps {
 	chatRoomIds: string[] | undefined;
+	profile: IProfile | undefined;
 }
 
-export default function ({ chatRoomIds }: NavChatRoomProps) {
-	const [chatRooms, setChatRooms] = useState<ChatRoom[]>();
+export default function ({ chatRoomIds, profile }: NavChatRoomProps) {
+	const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
 	useEffect(() => {
 		if (!chatRoomIds) return;
 		// if (chatRoomIds.length === 0) return;
@@ -25,16 +28,22 @@ export default function ({ chatRoomIds }: NavChatRoomProps) {
 				{
 					uid: '1',
 					name: 'test',
-					memberIds: ['1', '2'],
 					imageUrl: '',
-					messages: [],
-				},
-				{
-					uid: '2',
-					name: 'test2',
-					memberIds: ['1', '2'],
-					imageUrl: '',
-					messages: [],
+					memberIds: [],
+					messages: [
+						{
+							uid: '1',
+							text: 'test',
+							timestamp: new Date().getTime(),
+							userId: profile?.uid,
+						},
+						{
+							uid: '2',
+							text: 'test',
+							timestamp: new Date().getTime(),
+							userId: '1',
+						},
+					],
 				},
 			]);
 			return;
@@ -58,20 +67,15 @@ export default function ({ chatRoomIds }: NavChatRoomProps) {
 				}}
 			>
 				<Typography>Direct Messages</Typography>
-				<IconButton
-					sx={{
-						':hover': {
-							backgroundColor: '#2f2f2f',
-							borderRadius: '0.5em',
-						},
-					}}
-				>
-					<Add />
-				</IconButton>
+				<Tooltip title='new direct message' placement='right'>
+					<IconButton>
+						<Add />
+					</IconButton>
+				</Tooltip>
 			</Box>
 			{chatRooms?.map((chatRoom) => (
 				<Box key={chatRoom.uid}>
-					<ChatRoomAvatar chatRoom={chatRoom} />
+					<ChatRoomAvatar chatRoom={chatRoom} setChatRooms={setChatRooms} profile={profile} />
 				</Box>
 			))}
 		</>

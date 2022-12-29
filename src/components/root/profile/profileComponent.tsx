@@ -1,8 +1,8 @@
-import { ExitToAppOutlined, Settings } from '@mui/icons-material';
-import { Avatar, Box, Button, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Tooltip, Typography } from '@mui/material';
+import { ExitToAppOutlined } from '@mui/icons-material';
+import { Avatar, Box, Button, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { logout } from '../../../config/firebase';
-import { IProfile } from '../../../intefaces/Profile';
+import { IProfile } from '../../../interfaces/Profile';
 import ProfileItemsComponent from './profileItemsComponent';
 
 interface ProfilePros {

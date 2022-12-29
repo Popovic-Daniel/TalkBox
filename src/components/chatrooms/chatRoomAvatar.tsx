@@ -1,21 +1,34 @@
 import { Clear } from '@mui/icons-material';
 import { Avatar, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip, Typography } from '@mui/material';
-import { deleteDoc, doc } from 'firebase/firestore';
+import { deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { db } from '../../config/firebase';
-import { ChatRoom } from '../../intefaces/ChatRoom';
+import RemoveChatroomDialog from '../../dialogs/removeChatroomDialog';
+import { ChatRoom } from '../../interfaces/ChatRoom';
+import { IProfile } from '../../interfaces/Profile';
 
-export default function ({ chatRoom }: { chatRoom: ChatRoom }) {
+interface IChatRoomAvatarProps {
+	chatRoom: ChatRoom;
+	setChatRooms: React.Dispatch<React.SetStateAction<ChatRoom[]>>;
+	profile: IProfile | undefined;
+}
+
+export default function ({ chatRoom, setChatRooms, profile }: IChatRoomAvatarProps) {
 	const [isHovered, setIsHovered] = useState<boolean>(false);
 	const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState<boolean>(false);
+
 	const onHandleRemoveChatRoom = () => {
 		setIsRemoveDialogOpen(true);
 	};
 	const onRemoveChatRoom = async () => {
 		setIsRemoveDialogOpen(false);
 		try {
-			const chatRoomRef = doc(db, 'chatRooms', chatRoom.uid);
-			await deleteDoc(chatRoomRef);
+			setChatRooms((prev) => prev.filter((chatRoom) => chatRoom.uid !== chatRoom.uid));
+			if (!profile) return;
+			await updateDoc(doc(db, 'users', profile.uid), {
+				chatRoomIds: profile.chatRoomIds.filter((chatRoomId) => chatRoomId !== chatRoom.uid),
+			});
 		} catch (error) {
 			console.log(error);
 		}
@@ -37,20 +50,27 @@ export default function ({ chatRoom }: { chatRoom: ChatRoom }) {
 				onMouseEnter={() => setIsHovered(true)}
 				onMouseLeave={() => setIsHovered(false)}
 			>
-				<Avatar sx={{ width: 40, height: 40, marginRight: '0.5em' }} alt={chatRoom.name} src={chatRoom.imageUrl} />
-				<Typography>{chatRoom.name}</Typography>
+				<Link
+					to='/chat'
+					state={{ chatRoom: chatRoom }}
+					style={{ textDecoration: 'none', color: 'inherit', display: 'flex', width: '100%', alignItems: 'center' }}
+				>
+					<Avatar sx={{ width: 40, height: 40, marginRight: '0.5em' }} alt={chatRoom.name} src={chatRoom.imageUrl} />
+					<Typography>{chatRoom.name}</Typography>
+				</Link>
 				{/* remove chatroom icon */}
 				<Tooltip
 					title='Remove chatroom'
 					sx={{
-						marginLeft: 'auto',
 						cursor: 'pointer',
 						':hover': {
 							color: 'red',
 						},
 					}}
+					onClick={onHandleRemoveChatRoom}
+					placement='right'
 				>
-					<IconButton onClick={onHandleRemoveChatRoom}>
+					<IconButton>
 						<Clear
 							sx={{
 								visibility: isHovered ? 'visible' : 'hidden',
@@ -58,32 +78,9 @@ export default function ({ chatRoom }: { chatRoom: ChatRoom }) {
 						/>
 					</IconButton>
 				</Tooltip>
-				{/* dialog */}
 			</Box>
-			<Dialog open={isRemoveDialogOpen} onClose={() => setIsRemoveDialogOpen(false)}>
-				<DialogTitle>Remove chatroom</DialogTitle>
-				<DialogContent>
-					<Typography>Are you sure you want to remove this chatroom?</Typography>
-				</DialogContent>
-				<DialogActions>
-					<Button onClick={() => setIsRemoveDialogOpen(false)} sx={{ ':hover': { backgroundColor: '#2f2f2f' } }}>
-						Cancel
-					</Button>
-					<Button
-						onClick={onRemoveChatRoom}
-						variant='contained'
-						sx={{
-							backgroundColor: 'red',
-							color: 'white',
-							':hover': {
-								backgroundColor: '#b30000',
-							},
-						}}
-					>
-						Remove
-					</Button>
-				</DialogActions>
-			</Dialog>
+
+			<RemoveChatroomDialog onClose={() => setIsRemoveDialogOpen(false)} open={isRemoveDialogOpen} onRemoveChatRoom={onRemoveChatRoom} />
 		</>
 	);
 }

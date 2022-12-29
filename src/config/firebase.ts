@@ -8,7 +8,7 @@ import {
     query, setDoc, where
 } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { IProfile } from "../intefaces/Profile";
+import { IProfile } from "../interfaces/Profile";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -95,17 +95,17 @@ const logout = async () => {
 }
 // set profile is a function that takes in a profile object and sets it to state
 
-const getProfile = async (uid: string, setProfile: (profile: IProfile) => void) => {
+const getProfile = async (uid: string): Promise<IProfile | undefined> => {
     try {
         // document has the same id as the uid
         const docRef = doc(db, "users", uid);
+        // check if the document exists in the cache
         const docSnap = await getDoc(docRef);
         if (!docSnap.exists()) {
             console.log("No such document!");
             return;
         }
-        const profile = docSnap.data() as IProfile;
-        setProfile(profile);
+        return docSnap.data() as IProfile;
     } catch (error) {
         console.log(error);
     }
