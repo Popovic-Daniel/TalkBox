@@ -1,4 +1,5 @@
-import { Avatar, Box, TextField, Typography } from '@mui/material';
+import { Delete, Edit } from '@mui/icons-material';
+import { Avatar, Box, IconButton, TextField, Typography } from '@mui/material';
 import { doc, Unsubscribe, updateDoc } from 'firebase/firestore';
 import { useContext, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -77,10 +78,15 @@ export default function () {
 						<Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1 }}>
 							<Avatar src={message.userId === profile?.uid ? profile?.avatar : friend?.avatar} />
 							<Typography>{message.userId === profile?.uid ? profile?.name : friend?.name}</Typography>
-							{/* display date here with some opacity */}
 							<Typography sx={{ opacity: 0.5 }}>{new Date(message.timestamp).toLocaleString()}</Typography>
 						</Box>
-						<Typography>{message.text}</Typography>
+						<Box
+							sx={{
+								marginLeft: '3em',
+							}}
+						>
+							<Typography>{message.text}</Typography>
+						</Box>
 					</Box>
 				))}
 			</Box>
