@@ -83,6 +83,7 @@ export default function () {
 						<Box
 							sx={{
 								marginLeft: '3em',
+								opacity: 0.8,
 							}}
 						>
 							<Typography>{message.text}</Typography>
