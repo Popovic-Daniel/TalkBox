@@ -45,7 +45,6 @@ export default function MessageComponent({ message }: IMessageProps): JSX.Elemen
 			<Box
 				sx={{
 					display: 'flex',
-					gap: 1,
 					alignItems: 'center',
 					marginLeft: 'auto',
 					visibility: hover ? 'visible' : 'hidden',
@@ -54,14 +53,14 @@ export default function MessageComponent({ message }: IMessageProps): JSX.Elemen
 				{/* edit button */}
 				{/* delete button */}
 				{profile?.uid === message.userId && (
-					<Box>
+					<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
 						<Tooltip title='Edit message'>
-							<IconButton edge='start' aria-label='edit'>
+							<IconButton edge='start' aria-label='edit' sx={{ padding: 0, paddingRight: 1 }}>
 								<Edit />
 							</IconButton>
 						</Tooltip>
 						<Tooltip title='Delete message'>
-							<IconButton edge='start' aria-label='delete'>
+							<IconButton edge='start' aria-label='delete' sx={{ padding: 0, paddingRight: 1 }}>
 								<Delete />
 							</IconButton>
 						</Tooltip>
