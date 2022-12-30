@@ -62,7 +62,7 @@ export default function ChatRoomComponent(): JSX.Element {
 						profile: message.userId === profile?.uid ? profile : friend,
 						timestamp: message.timestamp,
 						messages: [message],
-						isOnTheNextDay: isOnTheNextDay,
+						isOnTheNextDay,
 					});
 				} else {
 					combinedMessages[combinedMessages.length - 1].messages.push(message);
@@ -72,7 +72,7 @@ export default function ChatRoomComponent(): JSX.Element {
 					profile: message.userId === profile?.uid ? profile : friend,
 					timestamp: message.timestamp,
 					messages: [message],
-					isOnTheNextDay: isOnTheNextDay,
+					isOnTheNextDay,
 				});
 			}
 

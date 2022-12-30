@@ -18,7 +18,7 @@ export default function MessageComponent({ message }: IMessageProps): JSX.Elemen
 			minute: 'numeric',
 		});
 		const time = new Date(message.timestamp);
-		const [{ value: hour }, _, { value: minute }] = format.formatToParts(time);
+		const [{ value: hour }, , { value: minute }] = format.formatToParts(time);
 		return `${hour}:${minute} ${time.getHours() < 12 ? 'am' : 'pm'}`;
 	}
 
