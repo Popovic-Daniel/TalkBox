@@ -4,27 +4,24 @@ export const darkTheme = createTheme({
   palette: {
     mode: 'dark'
   },
-  // schroll bar
+  // scroll bar
   components: {
     MuiCssBaseline: {
       styleOverrides: {
-        body: {
-          scrollbarColor: '#2f3136 #292b2f',
-          '&::-webkit-scrollbar': {
-            width: '8px',
-            height: '8px'
-          },
-          '&::-webkit-scrollbar-track': {
-            background: '#292b2f'
-          },
-          '&::-webkit-scrollbar-thumb': {
-            background: '#2f3136',
-            borderRadius: '4px',
-            border: '3px solid #292b2f'
-          }
-        }
-      }
-    }
-  }
+        '&::-webkit-scrollbar': {
+          width: '1em',
+          backgroundColor: '#2f2f2f',
+          borderRadius: '1em',
+          padding: '0.5em',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: '#1a1a1a',
+          borderRadius: '1em',
+          backgroundClip: 'padding-box',
+          border: '0.2em solid transparent',
+        },
+      },
+    },
+  },
 
 })

@@ -1,17 +1,27 @@
 import { Send } from '@mui/icons-material';
-import { Avatar, Box, IconButton, InputAdornment, TextField, Typography } from '@mui/material';
+import { Avatar, Box, Divider, IconButton, InputAdornment, TextField, Typography } from '@mui/material';
 import { doc, Unsubscribe, updateDoc } from 'firebase/firestore';
 import { Dispatch, useContext, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { createChatRoom, db, getChatRoomByMembers, getProfile } from '../../config/firebase';
 import { ChatRoom } from '../../interfaces/ChatRoom';
+import { Message } from '../../interfaces/Message';
 import { IProfile } from '../../interfaces/Profile';
 import { profileContext } from '../root/rootComponent';
+import MessageComponent from './messageComponent';
+
+interface ICombinedMessage {
+	profile: IProfile | undefined;
+	timestamp: number;
+	messages: Message[];
+	isOnTheNextDay: boolean;
+}
 
 export default function ChatRoomComponent(): JSX.Element {
 	const [profile] = useContext<[IProfile | undefined, Dispatch<IProfile | undefined>]>(profileContext);
 	const [friend, setFriend] = useState<IProfile>();
 	const [chatRoom, setChatRoom] = useState<ChatRoom | undefined>();
+	const [combinedMessages, setCombinedMessages] = useState<ICombinedMessage[]>([]);
 	const [message, setMessage] = useState<string>('');
 	const data = useLocation();
 	const navigate = useNavigate();
@@ -27,6 +37,50 @@ export default function ChatRoomComponent(): JSX.Element {
 			unsubscribe = getChatRoomByMembers(memberIds, setChatRoom);
 		}
 		return unsubscribe;
+	}
+
+	function combineMessages(): void {
+		const combinedMessages: ICombinedMessage[] = [];
+		let isOnTheNextDay: boolean = false;
+		let previousMessage: Message | undefined;
+		if (chatRoom === undefined) return;
+		if (profile === undefined) return;
+		chatRoom.messages.forEach((message) => {
+			if (previousMessage === undefined) {
+				combinedMessages.push({
+					profile: message.userId === profile?.uid ? profile : friend,
+					timestamp: message.timestamp,
+					messages: [message],
+					isOnTheNextDay: true,
+				});
+				previousMessage = message;
+				return;
+			}
+			if (message.userId === previousMessage.userId) {
+				if (isOnTheNextDay) {
+					combinedMessages.push({
+						profile: message.userId === profile?.uid ? profile : friend,
+						timestamp: message.timestamp,
+						messages: [message],
+						isOnTheNextDay: isOnTheNextDay,
+					});
+				} else {
+					combinedMessages[combinedMessages.length - 1].messages.push(message);
+				}
+			} else {
+				combinedMessages.push({
+					profile: message.userId === profile?.uid ? profile : friend,
+					timestamp: message.timestamp,
+					messages: [message],
+					isOnTheNextDay: isOnTheNextDay,
+				});
+			}
+
+			if (message.timestamp === undefined) return;
+			isOnTheNextDay = new Date(message.timestamp).getDate() !== new Date(previousMessage.timestamp).getDate();
+			previousMessage = message;
+		});
+		setCombinedMessages(combinedMessages);
 	}
 
 	function addMessage(): void {
@@ -61,13 +115,13 @@ export default function ChatRoomComponent(): JSX.Element {
 		let unsubscribe: Unsubscribe | undefined;
 		if (friendUid !== undefined) {
 			unsubscribe = getProfile(friendUid, setFriend);
-		} else if (data.state?.chatRoom === null) {
+		} else if (data.state?.chatRoom !== undefined) {
 			unsubscribe = getProfile(
 				data.state.chatRoom.memberIds.find((member: string) => member !== profile?.uid),
 				setFriend
 			);
 		}
-		if (chatRoom == null) return;
+		if (chatRoom === undefined) return;
 		if (chatRoom.uid === undefined) return;
 		if (!profile.chatRoomIds.includes(chatRoom.uid)) navigate('/friends');
 		return () => {
@@ -90,10 +144,9 @@ export default function ChatRoomComponent(): JSX.Element {
 
 	useEffect(() => {
 		if (chatRoom === undefined) return;
-		// Scroll to bottom
-		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 		if (chatRoom.uid === undefined) return;
 		if (profile === undefined) return;
+		combineMessages();
 		if (profile.chatRoomIds.includes(chatRoom.uid)) return;
 
 		const docRef = doc(db, 'users', profile?.uid);
@@ -102,7 +155,12 @@ export default function ChatRoomComponent(): JSX.Element {
 		}).catch((error) => {
 			console.log(error);
 		});
+		// combine messages
 	}, [chatRoom]);
+	useEffect(() => {
+		if (combinedMessages.length === 0) return;
+		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+	}, [combinedMessages]);
 	return (
 		<Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
 			<Box
@@ -114,20 +172,39 @@ export default function ChatRoomComponent(): JSX.Element {
 					marginBottom: '1em',
 				}}
 			>
-				{chatRoom?.messages.map((message) => (
-					<Box key={message.uid} sx={{ display: 'flex', flexDirection: 'column' }} ref={messagesEndRef}>
-						<Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1 }}>
-							<Avatar src={message.userId === profile?.uid ? profile?.avatar : friend?.avatar} />
-							<Typography>{message.userId === profile?.uid ? profile?.name : friend?.name}</Typography>
-							<Typography sx={{ opacity: 0.5 }}>{new Date(message.timestamp).toLocaleString()}</Typography>
+				{combinedMessages.map((combinedMessage) => (
+					<Box key={combinedMessage.timestamp} sx={{ display: 'flex', flexDirection: 'column' }} ref={messagesEndRef}>
+						{/* divider with timestamp in the middle */}
+						{combinedMessage.isOnTheNextDay && (
+							<Box
+								sx={{
+									display: 'flex',
+									flexDirection: 'row',
+									alignItems: 'center',
+									justifyContent: 'center',
+									gap: 1,
+									margin: '1em',
+								}}
+							>
+								<Divider sx={{ width: '100%' }}>
+									<Typography sx={{ opacity: 0.5 }}>{new Date(combinedMessage.timestamp).toLocaleString()}</Typography>
+								</Divider>
+							</Box>
+						)}
+
+						<Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+							<Avatar src={combinedMessage?.profile?.avatar} />
+							<Typography>{combinedMessage?.profile?.name}</Typography>
+							<Typography sx={{ opacity: 0.5 }}>{new Date(combinedMessage.timestamp).toLocaleString()}</Typography>
 						</Box>
 						<Box
 							sx={{
-								marginLeft: '3em',
 								opacity: 0.8,
 							}}
 						>
-							<Typography>{message.text}</Typography>
+							{combinedMessage.messages.map((message) => (
+								<MessageComponent key={message.uid} message={message} />
+							))}
 						</Box>
 					</Box>
 				))}
@@ -135,7 +212,6 @@ export default function ChatRoomComponent(): JSX.Element {
 			<TextField
 				sx={{
 					marginTop: 'auto',
-					padding: 1,
 					width: '100%',
 				}}
 				placeholder='Type your message here'
@@ -159,6 +235,4 @@ export default function ChatRoomComponent(): JSX.Element {
 			/>
 		</Box>
 	);
-	// how would i add autoscroll
-	// A: https://stackoverflow.com/questions/37620694/how-to-scroll-to-bottom-in-react
 }
