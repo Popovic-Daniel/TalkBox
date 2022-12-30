@@ -69,7 +69,6 @@ export default function ChatRoomAvatar({ chatRoom, onRemoveChatRoom }: IChatRoom
 				open={isRemoveDialogOpen}
 				onRemoveChatRoom={() => {
 					setIsRemoveDialogOpen(false);
-					console.log(chatRoom);
 					void onRemoveChatRoom(chatRoom?.uid);
 				}}
 			/>

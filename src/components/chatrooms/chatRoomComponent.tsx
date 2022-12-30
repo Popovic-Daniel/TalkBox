@@ -15,7 +15,7 @@ export default function ChatRoomComponent(): JSX.Element {
 	const [message, setMessage] = useState<string>('');
 	const data = useLocation();
 	const navigate = useNavigate();
-	const friendUid: string | null = data.state?.friendUid;
+	const friendUid: string | undefined = data.state?.friendUid;
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 
 	async function getChatRoom(): Promise<Unsubscribe | undefined> {
@@ -59,7 +59,7 @@ export default function ChatRoomComponent(): JSX.Element {
 		if (profile === undefined) return;
 
 		let unsubscribe: Unsubscribe | undefined;
-		if (friendUid !== null) {
+		if (friendUid !== undefined) {
 			unsubscribe = getProfile(friendUid, setFriend);
 		} else if (data.state?.chatRoom === null) {
 			unsubscribe = getProfile(

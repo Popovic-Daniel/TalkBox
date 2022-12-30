@@ -137,7 +137,6 @@ const getChatRoomByMembers = (memberIds: string[], setChatRoom: Dispatch<ChatRoo
         uid: snap.docs[0].id,
         ...snap.docs[0]?.data()
       }
-      console.log('chatroom snap', chatRoom)
       setChatRoom(chatRoom as ChatRoom)
     })
     return unsubscribe
