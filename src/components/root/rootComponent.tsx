@@ -10,13 +10,13 @@ import SearchComponent from './searchComponent';
 
 export const profileContext = createContext<IProfile | any>(undefined);
 
-export default function RootComponent() {
-	const [user, loading, error] = useAuthState(auth);
+export default function RootComponent(): JSX.Element {
+	const [user, loading] = useAuthState(auth);
 	const [profile, setProfile] = useState<IProfile>();
 	const navigate = useNavigate();
 	useEffect(() => {
 		if (loading) return;
-		if (!user) {
+		if (user == null) {
 			navigate('/login');
 			return;
 		}

@@ -1,21 +1,20 @@
 import { Avatar, Box, Divider, Typography } from '@mui/material';
 import React, { useContext, useEffect, useState } from 'react';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { auth, getFriends, getProfile } from '../../config/firebase';
+import { Link } from 'react-router-dom';
+import { getFriends } from '../../config/firebase';
 import { IProfile } from '../../interfaces/Profile';
 import { profileContext } from '../root/rootComponent';
 import FriendOptionsComponent from './friendOptionsComponent';
 
-export default function () {
-	const [profile, setProfile] = useContext<[IProfile, React.Dispatch<IProfile>]>(profileContext);
+export default function FriendsComponent(): JSX.Element {
+	const [profile] = useContext<[IProfile | undefined, React.Dispatch<IProfile> | undefined]>(profileContext);
 	const [friends, setFriends] = useState<IProfile[]>();
 	useEffect(() => {
-		if (!profile) return;
-		if (profile.friendIds.length == 0) return;
+		if (profile === undefined) return;
+		if (profile.friendIds.length === 0) return;
 		const unsubscribe = getFriends(profile.friendIds, setFriends);
 		return () => {
-			if (unsubscribe) unsubscribe();
+			if (unsubscribe != null) unsubscribe();
 		};
 	}, [profile]);
 

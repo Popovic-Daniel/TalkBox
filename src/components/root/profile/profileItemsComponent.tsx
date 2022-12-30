@@ -1,7 +1,7 @@
 import { Settings } from '@mui/icons-material';
 import { IconButton, Tooltip } from '@mui/material';
 
-export default function () {
+export default function ProfileItemsComponent(): JSX.Element {
 	const items = [
 		{
 			name: 'settings',

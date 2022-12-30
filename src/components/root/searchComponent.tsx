@@ -1,8 +1,8 @@
 import { Box, Typography } from '@mui/material';
-export default function SearchComponent() {
+export default function SearchComponent(): JSX.Element {
 	return (
 		<Box sx={{ display: 'flex', height: '8vh' }}>
-			{/* search bar which opens a dialog => is just a dummy*/}
+			{/* search bar which opens a dialog => is just a dummy */}
 			<Box
 				sx={{
 					cursor: 'pointer',

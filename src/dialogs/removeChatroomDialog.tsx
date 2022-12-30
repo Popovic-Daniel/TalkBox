@@ -6,7 +6,7 @@ interface IRemoveChatroomDialogProps {
 	onRemoveChatRoom: () => void;
 }
 
-export default function ({ open, onClose, onRemoveChatRoom }: IRemoveChatroomDialogProps) {
+export default function RemoveChatroomDialog({ open, onClose, onRemoveChatRoom }: IRemoveChatroomDialogProps): JSX.Element {
 	return (
 		<Dialog open={open} onClose={onClose}>
 			<DialogTitle>Remove chatroom</DialogTitle>

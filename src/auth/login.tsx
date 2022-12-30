@@ -1,21 +1,21 @@
+import { Google } from '@mui/icons-material';
+import { Box, Button, Card, FormControl, TextField, Typography } from '@mui/material';
+import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { Link, useNavigate } from 'react-router-dom';
 import { auth, loginWithEmailAndPassword, signInWithGoogle } from '../config/firebase';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { Box, Button, Card, FormControl, FormGroup, Icon, TextField, Typography } from '@mui/material';
-import { motion } from 'framer-motion';
-import { Google } from '@mui/icons-material';
 
-export default function Login() {
+export default function Login(): JSX.Element {
 	const [email, setEmail] = useState<string>('');
 	const [password, setPassword] = useState<string>('');
-	const [user, loading, error] = useAuthState(auth);
+	const [user, loading] = useAuthState(auth);
 	const [showForm, setShowForm] = useState<boolean>(false);
 	const navigate = useNavigate();
 
 	useEffect(() => {
 		if (loading) return;
-		if (user) navigate('/');
+		if (user != null) navigate('/');
 	}, [user, loading]);
 	// login page with email and password and google login
 	// using mui similar
@@ -57,7 +57,7 @@ export default function Login() {
 						<form
 							onSubmit={(e) => {
 								e.preventDefault();
-								loginWithEmailAndPassword(email, password);
+								void loginWithEmailAndPassword(email, password);
 							}}
 						>
 							<FormControl sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -83,7 +83,9 @@ export default function Login() {
 								</Button>
 								<Button
 									variant='text'
-									onClick={() => signInWithGoogle()}
+									onClick={() => {
+										void signInWithGoogle();
+									}}
 									sx={{
 										color: 'black',
 										backgroundColor: 'white',
@@ -100,8 +102,8 @@ export default function Login() {
 									<Google />
 									<Typography>Login with Google</Typography>
 								</Button>
-								<Typography variant='body1'>
-									Don't have an account?{' '}
+								<Typography>
+									Don&apos;t have an account!&nbsp;
 									<Link to='/register' style={{ textDecoration: 'none', color: 'cyan' }}>
 										Register
 									</Link>

@@ -7,14 +7,14 @@ import { ChatRoom } from '../../interfaces/ChatRoom';
 
 interface IChatRoomAvatarProps {
 	chatRoom: ChatRoom;
-	onRemoveChatRoom: (chatRoomUid: string | undefined) => void;
+	onRemoveChatRoom: (chatRoomUid: string | undefined) => Promise<void>;
 }
 
-export default function ({ chatRoom, onRemoveChatRoom }: IChatRoomAvatarProps) {
+export default function ChatRoomAvatar({ chatRoom, onRemoveChatRoom }: IChatRoomAvatarProps): JSX.Element {
 	const [isHovered, setIsHovered] = useState<boolean>(false);
 	const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState<boolean>(false);
 
-	const onHandleRemoveChatRoom = () => {
+	const onHandleRemoveChatRoom = (): void => {
 		setIsRemoveDialogOpen(true);
 	};
 
@@ -36,7 +36,7 @@ export default function ({ chatRoom, onRemoveChatRoom }: IChatRoomAvatarProps) {
 			>
 				<Link
 					to='/chat'
-					state={{ chatRoom: chatRoom }}
+					state={{ chatRoom }}
 					style={{ textDecoration: 'none', color: 'inherit', display: 'flex', width: '100%', alignItems: 'center' }}
 				>
 					<Avatar sx={{ width: 40, height: 40, marginRight: '0.5em' }} alt={chatRoom.name} src={chatRoom.imageUrl} />
@@ -70,7 +70,7 @@ export default function ({ chatRoom, onRemoveChatRoom }: IChatRoomAvatarProps) {
 				onRemoveChatRoom={() => {
 					setIsRemoveDialogOpen(false);
 					console.log(chatRoom);
-					onRemoveChatRoom(chatRoom?.uid);
+					void onRemoveChatRoom(chatRoom?.uid);
 				}}
 			/>
 		</>

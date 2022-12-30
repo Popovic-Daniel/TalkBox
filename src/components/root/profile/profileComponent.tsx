@@ -9,19 +9,19 @@ interface ProfilePros {
 	profile: IProfile | undefined;
 }
 
-export default function ProfileComponent({ profile }: ProfilePros) {
+export default function ProfileComponent({ profile }: ProfilePros): JSX.Element {
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const open = Boolean(anchorEl);
 
-	const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+	const handleClick = (event: React.MouseEvent<HTMLElement>): void => {
 		setAnchorEl(event.currentTarget);
 	};
 
-	const handleLogout = () => {
-		logout();
+	const handleLogout = (): void => {
+		void logout();
 		onClose();
 	};
-	const onClose = () => {
+	const onClose = (): void => {
 		setAnchorEl(null);
 	};
 

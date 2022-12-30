@@ -1,6 +1,7 @@
 import { Add } from '@mui/icons-material';
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
-import { collection, doc, documentId, getDocs, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
+import { Unsubscribe } from 'firebase/auth';
+import { collection, doc, documentId, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { db } from '../../../config/firebase';
 import { ChatRoom } from '../../../interfaces/ChatRoom';
@@ -12,10 +13,10 @@ interface NavChatRoomProps {
 	profile: IProfile | undefined;
 }
 
-export default function ({ chatRoomIds, profile }: NavChatRoomProps) {
+export default function NavChatRoomComponent({ chatRoomIds, profile }: NavChatRoomProps): JSX.Element {
 	const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
 	useEffect(() => {
-		if (!chatRoomIds) return;
+		if (chatRoomIds == null) return;
 		if (chatRoomIds.length === 0) return;
 
 		const unsubscribe = getChatRooms();
@@ -24,13 +25,13 @@ export default function ({ chatRoomIds, profile }: NavChatRoomProps) {
 		};
 	}, [chatRoomIds]);
 
-	function getChatRooms() {
+	function getChatRooms(): Unsubscribe {
 		const chatRoomsRef = collection(db, 'chatRooms');
 		const q = query(chatRoomsRef, where(documentId(), 'in', chatRoomIds));
 		const unsubscribe = onSnapshot(q, (query) => {
 			const chatRooms: ChatRoom[] = [];
 			query.forEach((doc) => {
-				let chatRoom: ChatRoom = {
+				const chatRoom: ChatRoom = {
 					uid: doc.id,
 					...(doc.data() as ChatRoom),
 				};
@@ -41,10 +42,10 @@ export default function ({ chatRoomIds, profile }: NavChatRoomProps) {
 		return unsubscribe;
 	}
 
-	const onRemoveChatRoom = async (chatRoomUid: string | undefined) => {
+	const onRemoveChatRoom = async (chatRoomUid: string | undefined): Promise<void> => {
 		try {
-			setChatRooms((prev) => prev.filter((chatRoom) => chatRoom.uid !== chatRoom.uid));
-			if (!profile) return;
+			setChatRooms((prev) => prev.filter((chatRoom) => chatRoom.uid !== chatRoomUid));
+			if (profile == null) return;
 			console.log(profile, chatRoomUid);
 			await updateDoc(doc(db, 'users', profile.uid), {
 				chatRoomIds: profile.chatRoomIds.filter((chatRoomId) => chatRoomId !== chatRoomUid),

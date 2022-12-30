@@ -9,7 +9,7 @@ interface INavProps {
 	profile: IProfile | undefined;
 }
 
-export default function ({ chatRoomIds, profile }: INavProps) {
+export default function NavComponent({ chatRoomIds, profile }: INavProps): JSX.Element {
 	const navRoutes = [
 		{
 			name: 'Friends',
@@ -22,7 +22,7 @@ export default function ({ chatRoomIds, profile }: INavProps) {
 		<Box sx={{ display: 'flex', flexDirection: 'column', height: '84vh', marginTop: '1em', opacity: 0.8 }}>
 			{/* map over navRoutes and render a button for each route */}
 			{navRoutes.map((route) => (
-				<Link to={route.path} style={{ textDecoration: 'none', color: 'inherit' }} state={{ profile: profile }} key={route.name}>
+				<Link to={route.path} style={{ textDecoration: 'none', color: 'inherit' }} state={{ profile }} key={route.name}>
 					<Button
 						sx={{
 							height: '6vh',

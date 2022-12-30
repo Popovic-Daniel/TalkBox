@@ -11,22 +11,20 @@ interface IFiendOptionsProps {
 	friendUid: string;
 }
 
-export default function ({ friendUid }: IFiendOptionsProps) {
+export default function FriendOptionsComponent({ friendUid }: IFiendOptionsProps): JSX.Element {
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const open = Boolean(anchorEl);
 
-	const [profile, setProfile] = useContext<[IProfile | undefined, Dispatch<SetStateAction<IProfile | undefined>>]>(profileContext);
+	const [profile] = useContext<[IProfile | undefined, Dispatch<SetStateAction<IProfile | undefined>>]>(profileContext);
 
-	const removeFriend = async () => {
-		try {
-			if (!profile) return;
-			profile.friendIds = profile.friendIds?.filter((id) => id !== friendUid);
-			await updateDoc(doc(db, 'users', profile?.uid), {
-				friendIds: profile.friendIds?.filter((id) => id !== friendUid),
-			});
-		} catch (error) {
+	const removeFriend = (): void => {
+		if (profile == null) return;
+		profile.friendIds = profile.friendIds?.filter((id) => id !== friendUid);
+		updateDoc(doc(db, 'users', profile?.uid), {
+			friendIds: profile.friendIds?.filter((id) => id !== friendUid),
+		}).catch((error) => {
 			console.log(error);
-		}
+		});
 		setAnchorEl(null);
 	};
 
@@ -49,7 +47,7 @@ export default function ({ friendUid }: IFiendOptionsProps) {
 					sx={{
 						color: 'red',
 					}}
-					onClick={removeFriend}
+					onClick={() => removeFriend}
 				>
 					Remove Friend
 				</MenuItem>
